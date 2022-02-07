@@ -1,0 +1,32 @@
+node {
+    stage('SCM Checkout'){
+        git branch: 'main', credentialsId: 'sarthak_azure', url: 'https://ALPHACODESCATS@dev.azure.com/ALPHACODESCATS/PROWATCH/_git/UIDemo'
+    }
+    stage('Install node modules') {
+        sh "npm install"
+    }
+
+    stage("Build") {
+        sh "npm run build --prod"
+    }
+    
+    stage('Build Docker Image'){
+        sh 'docker build -t alphacodesvikas/hello:1.0.0 .'
+    }
+    stage('Push Docker Image'){
+     withCredentials([string(credentialsId: 'docker-pwd', variable: 'dockerHubPwd')]) {
+        sh "docker login -u alphacodesvikas -p ${dockerHubPwd}"
+     }
+     sh 'docker push alphacodesvikas/hello:1.0.0'
+    }
+    stage('Run Container on Dev Server'){
+     def dockerRun = 'docker run -p 80:80 -d --name hello-app alphacodesvikas/hello:1.0.0'
+     sshagent(['dev-server-115']) {
+      sh "ssh -o StrictHostKeyChecking=no root@172.16.10.115 ${dockerRun}"
+     }
+    }
+    
+    // stage("Copy") {
+    //     sh "cp -a /var/lib/jenkins/workspace/angular-pipeline/dist/jenkins-test/. /var/www/jenkins_test/html/"
+    // }
+}
