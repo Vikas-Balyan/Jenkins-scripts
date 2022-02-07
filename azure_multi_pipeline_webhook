@@ -1,0 +1,2 @@
+Webhook-post via http
+http://x.x.x.x:8080/multibranch-webhook-trigger/invoke?token=mytoken
