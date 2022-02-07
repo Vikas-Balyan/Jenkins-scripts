@@ -13,21 +13,23 @@ node{
 
         sh "${mvnCMD} clean package"
     }
-    // stage('Build Docker Image'){
-    //     sh 'docker build -t alphacodesvikas/docker-app:1.0.0 .'
-    // }
-    // stage('Push Docker Image'){
-    //  withCredentials([string(credentialsId: 'docker-pwd', variable: 'dockerHubPwd')]) {
-    //     sh "docker login -u alphacodesvikas -p ${dockerHubPwd}"
-    //  }
-    //  sh 'docker push alphacodesvikas/docker-app:1.0.0'
-    // }
+    stage('Build Docker Image'){
+        sh 'docker build -t alphacodesvikas/docker-app:1.0.0 .'
+    }
+    stage('Push Docker Image'){
+     withCredentials([string(credentialsId: 'docker-pwd', variable: 'dockerHubPwd')]) {
+        sh "docker login -u alphacodesvikas -p ${dockerHubPwd}"
+     }
+     sh 'docker push alphacodesvikas/docker-app:1.0.0'
+    }
     
 
-    // stage('Run Container on Dev Server'){
-    //  def dockerRun = 'docker run -p 6262:6262 -d --name docker-app alphacodesvikas/docker-app:1.0.0'
-    //  sshagent(['dev-server-115']) {
-    //   sh "ssh -o StrictHostKeyChecking=no root@172.16.10.115 ${dockerRun}"
-    //  }
-    // }
+    stage('Run Container on Dev Server'){
+     def dockerDel = 'docker rm -f docker-app'
+     def dockerRun = 'docker run  -p 6262:6262 -d --name docker-app alphacodesvikas/docker-app:1.0.0'
+     sshagent(['dev-server-115']) {
+      sh "ssh -o StrictHostKeyChecking=no root@172.16.10.115 ${dockerDel}"
+      sh "ssh -o StrictHostKeyChecking=no root@172.16.10.115 ${dockerRun}"
+     }
+    }
 }
